@@ -1,0 +1,667 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Snap90s - Retro Disposable Camera</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=VT323&family=Changa+One&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            touch-action: manipulation;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+        
+        .font-digital {
+            font-family: 'VT323', monospace;
+        }
+
+        .font-brand {
+            font-family: 'Changa One', cursive;
+        }
+
+        .font-mono-tech {
+            font-family: 'Share Tech Mono', monospace;
+        }
+
+        /* Skeuomorphic Plastic Textures */
+        .camera-body {
+            background: linear-gradient(145deg, #f5d442, #e0a312);
+            box-shadow: 
+                inset 0 2px 4px rgba(255, 255, 255, 0.6),
+                inset 0 -4px 6px rgba(0, 0, 0, 0.4),
+                0 15px 25px rgba(0, 0, 0, 0.5);
+            border: 3px solid #333;
+        }
+
+        .plastic-grip {
+            background-color: #222;
+            background-image: 
+                radial-gradient(#3d3d3d 15%, transparent 16%),
+                radial-gradient(#3d3d3d 15%, transparent 16%);
+            background-size: 8px 8px;
+            background-position: 0 0, 4px 4px;
+        }
+
+        .shutter-btn {
+            background: radial-gradient(circle, #e63946 0%, #b71c1c 80%);
+            box-shadow: 
+                0 6px 0 #7f0000,
+                0 8px 10px rgba(0,0,0,0.4),
+                inset 0 2px 4px rgba(255,255,255,0.4);
+            transition: all 0.05s ease;
+        }
+
+        .shutter-btn:active {
+            transform: translateY(4px);
+            box-shadow: 
+                0 2px 0 #7f0000,
+                0 3px 5px rgba(0,0,0,0.4),
+                inset 0 2px 4px rgba(255,255,255,0.4);
+        }
+
+        .flash-btn-active {
+            background: radial-gradient(circle, #43a047 0%, #1b5e20 80%) !important;
+            box-shadow: 0 0 12px #4caf50 !important;
+        }
+
+        .wheel-grip {
+            background: repeating-linear-gradient(
+                90deg,
+                #111,
+                #111 4px,
+                #333 4px,
+                #333 8px
+            );
+        }
+
+        .screen-flash {
+            animation: flash-animation 0.3s forwards;
+        }
+
+        @keyframes flash-animation {
+            0% { opacity: 1; background-color: #fff; }
+            100% { opacity: 0; background-color: transparent; }
+        }
+
+        /* Viewfinder Frame Style */
+        .viewfinder-frame {
+            box-shadow: inset 0 0 15px rgba(0,0,0,0.8), 0 0 0 4px #222;
+        }
+
+        .led-screen {
+            background-color: #0b1a0e;
+            box-shadow: inset 0 0 8px rgba(0,0,0,0.9);
+            border: 2px solid #2d4530;
+        }
+    </style>
+</head>
+<body class="bg-zinc-900 text-zinc-100 min-h-screen flex flex-col justify-between items-center p-2 sm:p-4 overflow-x-hidden">
+
+    <!-- Top Header / App Title -->
+    <header class="w-full max-w-md flex justify-between items-center py-2 px-3 bg-zinc-800 rounded-xl mb-2 border border-zinc-700">
+        <div class="flex items-center gap-2">
+            <div class="w-3 h-3 rounded-full bg-emerald-500 animate-pulse"></div>
+            <span class="font-bold tracking-wider text-sm text-zinc-200">SNAP-90 LOCAL</span>
+        </div>
+        <div class="text-xs text-emerald-400 bg-emerald-950/80 px-2.5 py-1 rounded-full border border-emerald-800/50 flex items-center gap-1">
+            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
+            <span>100% Offline Safe</span>
+        </div>
+    </header>
+
+    <!-- MAIN DISPOSABLE CAMERA BODY -->
+    <main class="w-full max-w-md camera-body rounded-3xl p-4 sm:p-5 flex flex-col justify-between relative shadow-2xl border-4 border-amber-800/40 my-auto">
+        
+        <!-- TOP CONTROL PANEL (Shutter, Flash Switch, Counter) -->
+        <div class="flex justify-between items-center mb-4 bg-amber-600/30 p-2 rounded-2xl border border-amber-400/40">
+            <!-- Flash Toggle Button -->
+            <button id="flashToggleBtn" class="flex flex-col items-center gap-1 bg-zinc-800 text-amber-400 px-3 py-2 rounded-xl border-2 border-zinc-900 active:scale-95 transition-all shadow-md">
+                <svg id="flashIcon" class="w-5 h-5 fill-current" viewBox="0 0 24 24">
+                    <path d="M7 2v11h3v9l7-12h-4l4-8z"/>
+                </svg>
+                <span class="text-[9px] font-bold tracking-tighter uppercase text-zinc-300">FLASH OFF</span>
+            </button>
+
+            <!-- Vintage LED Film Counter Window -->
+            <div class="flex flex-col items-center bg-zinc-900 p-2 rounded-xl border-2 border-amber-500/50 shadow-inner">
+                <span class="text-[9px] font-bold text-amber-500 uppercase tracking-widest leading-none mb-1">EXPOSURES LEFT</span>
+                <div class="led-screen px-3 py-0.5 rounded flex items-center justify-center">
+                    <span id="counterDisplay" class="font-digital text-2xl text-red-500 tracking-widest font-bold drop-shadow-[0_0_5px_rgba(239,68,68,0.8)]">24</span>
+                </div>
+            </div>
+
+            <!-- Mechanical Shutter Button -->
+            <div class="flex flex-col items-center">
+                <button id="shutterBtn" class="shutter-btn w-16 h-16 rounded-full border-4 border-amber-100 flex items-center justify-center cursor-pointer select-none">
+                    <div class="w-10 h-10 rounded-full border-2 border-red-900/50 bg-red-600/30"></div>
+                </button>
+                <span class="text-[9px] font-bold text-amber-950 uppercase mt-1 tracking-tighter">PRESS SHUTTER</span>
+            </div>
+        </div>
+
+        <!-- CAMERA MIDDLE SECTION (Viewfinder & Branding) -->
+        <div class="relative bg-zinc-800 rounded-2xl p-3 border-2 border-zinc-900 shadow-inner flex flex-col gap-3">
+            
+            <!-- Camera Viewfinder Overlay Frame -->
+            <div class="relative w-full aspect-[4/3] bg-black rounded-xl overflow-hidden viewfinder-frame flex items-center justify-center">
+                <!-- Live Video Feed -->
+                <video id="webcamVideo" autoplay playsinline muted class="w-full h-full object-cover"></video>
+                
+                <!-- Viewfinder Crosshair overlay -->
+                <div class="absolute inset-0 pointer-events-none border border-white/20 m-4 rounded flex items-center justify-center">
+                    <div class="w-6 h-6 border-t-2 border-l-2 border-amber-400/60 absolute top-2 left-2"></div>
+                    <div class="w-6 h-6 border-t-2 border-r-2 border-amber-400/60 absolute top-2 right-2"></div>
+                    <div class="w-6 h-6 border-b-2 border-l-2 border-amber-400/60 absolute bottom-2 left-2"></div>
+                    <div class="w-6 h-6 border-b-2 border-r-2 border-amber-400/60 absolute bottom-2 right-2"></div>
+                    <div class="w-2 h-2 rounded-full bg-red-500/80 animate-ping"></div>
+                </div>
+
+                <!-- Camera Switch Button (Over Viewfinder) -->
+                <button id="switchCameraBtn" class="absolute bottom-2 right-2 bg-black/60 hover:bg-black/80 backdrop-blur text-white p-2 rounded-full border border-white/30 transition-all active:scale-90">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+                </button>
+
+                <!-- Processing Overlay Screen -->
+                <div id="processingOverlay" class="hidden absolute inset-0 bg-black/90 flex-col items-center justify-center text-amber-400 z-10 gap-2">
+                    <div class="w-8 h-8 border-4 border-amber-400 border-t-transparent rounded-full animate-spin"></div>
+                    <span class="font-mono-tech text-xs tracking-wider animate-pulse">DEVELOPING FILM...</span>
+                </div>
+            </div>
+
+            <!-- Skeuomorphic Branding & Grip Line -->
+            <div class="flex justify-between items-center px-1">
+                <div class="flex flex-col">
+                    <span class="font-brand text-xl text-amber-400 tracking-wider drop-shadow-md">SNAP-MATIC 1998</span>
+                    <span class="text-[9px] font-mono-tech text-amber-200/70">ISO 400 • VINTAGE COLOR FILM</span>
+                </div>
+                <!-- Simulated Winding Wheel -->
+                <div class="flex items-center gap-1 bg-zinc-900 px-2 py-1 rounded-lg border border-zinc-700">
+                    <span class="text-[8px] text-zinc-400 font-bold uppercase">WIND</span>
+                    <div id="windingWheel" class="w-10 h-4 wheel-grip rounded cursor-pointer active:translate-x-1 transition-transform"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- CAMERA BOTTOM BAR (Textured Grip & Album Button) -->
+        <div class="mt-4 flex justify-between items-center pt-2 border-t border-amber-600/40">
+            <div class="plastic-grip h-8 w-2/3 rounded-lg border border-zinc-800"></div>
+            
+            <!-- Open Roll Album Drawer Button -->
+            <button id="openAlbumBtn" class="bg-zinc-900 hover:bg-zinc-800 text-amber-400 font-mono-tech text-xs px-3 py-2 rounded-xl border border-amber-500/50 flex items-center gap-2 shadow-lg active:scale-95 transition-all">
+                <svg class="w-4 h-4 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                <span>FILM ROLL (<span id="albumCount">0</span>)</span>
+            </button>
+        </div>
+    </main>
+
+    <!-- LOCAL FILM ROLL GALLERY MODAL -->
+    <div id="albumModal" class="fixed inset-0 bg-black/90 backdrop-blur-md z-50 hidden flex-col justify-between p-4 max-w-md mx-auto my-auto h-full">
+        <div class="flex justify-between items-center border-b border-zinc-800 pb-3">
+            <div>
+                <h2 class="font-brand text-xl text-amber-400 tracking-wide">DEVELOPED PHOTOS</h2>
+                <p class="text-[10px] text-zinc-400">Stored 100% locally in IndexedDB</p>
+            </div>
+            <button id="closeAlbumBtn" class="text-zinc-400 hover:text-white p-2 rounded-full bg-zinc-800 border border-zinc-700">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+            </button>
+        </div>
+
+        <!-- Photo Grid List -->
+        <div id="photoGrid" class="flex-1 overflow-y-auto my-4 grid grid-cols-1 gap-4 pr-1">
+            <!-- Dynamic local photos will be rendered here -->
+        </div>
+
+        <!-- Gallery Footer Options -->
+        <div class="border-t border-zinc-800 pt-3 flex justify-between gap-2">
+            <button id="clearAllBtn" class="text-xs bg-red-950/80 hover:bg-red-900 text-red-300 border border-red-800 px-3 py-2 rounded-xl transition-all">
+                Clear All Photos
+            </button>
+            <button id="newRollBtn" class="text-xs bg-amber-500 hover:bg-amber-400 text-zinc-950 font-bold px-4 py-2 rounded-xl transition-all">
+                Reset Film Roll (24)
+            </button>
+        </div>
+    </div>
+
+    <!-- Offscreen processing Canvas -->
+    <canvas id="processingCanvas" class="hidden"></canvas>
+
+    <!-- Fullscreen Screen Flash Overlay for Flash Effect -->
+    <div id="flashOverlay" class="fixed inset-0 pointer-events-none z-40 bg-white opacity-0"></div>
+
+    <script>
+        // IndexedDB Setup for secure local browser persistence
+        const DB_NAME = 'Snap90RetroCameraDB';
+        const STORE_NAME = 'photos';
+        let db;
+
+        function initDB() {
+            return new Promise((resolve, reject) => {
+                const request = indexedDB.open(DB_NAME, 1);
+                request.onupgradeneeded = (e) => {
+                    const db = e.target.result;
+                    if (!db.objectStoreNames.contains(STORE_NAME)) {
+                        db.createObjectStore(STORE_NAME, { keyPath: 'id', autoIncrement: true });
+                    }
+                };
+                request.onsuccess = (e) => {
+                    db = e.target.result;
+                    resolve(db);
+                };
+                request.onerror = (e) => reject('IndexedDB failed to initialize');
+            });
+        }
+
+        async function savePhotoToDB(dataUrl, timestamp) {
+            return new Promise((resolve) => {
+                const tx = db.transaction(STORE_NAME, 'readwrite');
+                const store = tx.objectStore(STORE_NAME);
+                store.add({ dataUrl, timestamp, createdAt: new Date().getTime() });
+                tx.oncomplete = () => resolve();
+            });
+        }
+
+        async function getAllPhotosFromDB() {
+            return new Promise((resolve) => {
+                const tx = db.transaction(STORE_NAME, 'readonly');
+                const store = tx.objectStore(STORE_NAME);
+                const request = store.getAll();
+                request.onsuccess = () => resolve(request.result || []);
+            });
+        }
+
+        async function deletePhotoFromDB(id) {
+            return new Promise((resolve) => {
+                const tx = db.transaction(STORE_NAME, 'readwrite');
+                const store = tx.objectStore(STORE_NAME);
+                store.delete(id);
+                tx.oncomplete = () => resolve();
+            });
+        }
+
+        async function clearAllPhotosFromDB() {
+            return new Promise((resolve) => {
+                const tx = db.transaction(STORE_NAME, 'readwrite');
+                const store = tx.objectStore(STORE_NAME);
+                store.clear();
+                tx.oncomplete = () => resolve();
+            });
+        }
+
+        // Web Audio Synthesizer for 90s Mechanical Camera Sounds
+        class CameraAudio {
+            constructor() {
+                this.ctx = null;
+            }
+
+            init() {
+                if (!this.ctx) {
+                    this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+                }
+            }
+
+            playShutterSound() {
+                this.init();
+                const now = this.ctx.currentTime;
+                
+                // Mechanical Click 1
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(120, now);
+                osc.frequency.exponentialRampToValueAtTime(30, now + 0.08);
+                gain.gain.setValueAtTime(0.8, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.08);
+                osc.connect(gain);
+                gain.connect(this.ctx.destination);
+                osc.start(now);
+                osc.stop(now + 0.08);
+
+                // Mechanical Winding Whir Sound
+                setTimeout(() => {
+                    const windNow = this.ctx.currentTime;
+                    const noiseBuffer = this.ctx.createBuffer(1, this.ctx.sampleRate * 0.25, this.ctx.sampleRate);
+                    const output = noiseBuffer.getChannelData(0);
+                    for (let i = 0; i < noiseBuffer.length; i++) {
+                        output[i] = Math.random() * 2 - 1;
+                    }
+
+                    const whiteNoise = this.ctx.createBufferSource();
+                    whiteNoise.buffer = noiseBuffer;
+
+                    const filter = this.ctx.createBiquadFilter();
+                    filter.type = 'bandpass';
+                    filter.frequency.value = 1000;
+                    filter.Q.value = 3;
+
+                    const windGain = this.ctx.createGain();
+                    windGain.gain.setValueAtTime(0.15, windNow);
+                    windGain.gain.exponentialRampToValueAtTime(0.01, windNow + 0.25);
+
+                    whiteNoise.connect(filter);
+                    filter.connect(windGain);
+                    windGain.connect(this.ctx.destination);
+
+                    whiteNoise.start(windNow);
+                    whiteNoise.stop(windNow + 0.25);
+                }, 100);
+            }
+        }
+
+        // App Core State
+        const audio = new CameraAudio();
+        let currentStream = null;
+        let facingMode = 'environment';
+        let flashEnabled = false;
+        let exposuresLeft = parseInt(localStorage.getItem('snap90_exposures') || '24');
+
+        // DOM Elements
+        const videoEl = document.getElementById('webcamVideo');
+        const shutterBtn = document.getElementById('shutterBtn');
+        const flashToggleBtn = document.getElementById('flashToggleBtn');
+        const counterDisplay = document.getElementById('counterDisplay');
+        const switchCameraBtn = document.getElementById('switchCameraBtn');
+        const processingCanvas = document.getElementById('processingCanvas');
+        const processingOverlay = document.getElementById('processingOverlay');
+        const openAlbumBtn = document.getElementById('openAlbumBtn');
+        const closeAlbumBtn = document.getElementById('closeAlbumBtn');
+        const albumModal = document.getElementById('albumModal');
+        const photoGrid = document.getElementById('photoGrid');
+        const albumCount = document.getElementById('albumCount');
+        const flashOverlay = document.getElementById('flashOverlay');
+        const clearAllBtn = document.getElementById('clearAllBtn');
+        const newRollBtn = document.getElementById('newRollBtn');
+        const windingWheel = document.getElementById('windingWheel');
+
+        // Update Counter Display UI
+        function updateCounterUI() {
+            counterDisplay.textContent = exposuresLeft.toString().padStart(2, '0');
+            localStorage.setItem('snap90_exposures', exposuresLeft.toString());
+        }
+
+        // Initialize Live Camera Stream
+        async function startCamera() {
+            if (currentStream) {
+                currentStream.getTracks().forEach(track => track.stop());
+            }
+
+            try {
+                const constraints = {
+                    video: {
+                        facingMode: facingMode,
+                        width: { ideal: 1920 },
+                        height: { ideal: 1080 }
+                    },
+                    audio: false
+                };
+
+                currentStream = await navigator.mediaDevices.getUserMedia(constraints);
+                videoEl.srcObject = currentStream;
+            } catch (err) {
+                console.warn('Camera access error fallback:', err);
+                // Fallback attempt for devices with strict facingMode
+                try {
+                    currentStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+                    videoEl.srcObject = currentStream;
+                } catch (fallbackErr) {
+                    alert('Camera access denied or unavailable. Please enable camera permissions to use the app.');
+                }
+            }
+        }
+
+        // Switch Camera Front/Back
+        switchCameraBtn.addEventListener('click', () => {
+            facingMode = facingMode === 'environment' ? 'user' : 'environment';
+            startCamera();
+        });
+
+        // Flash Toggle
+        flashToggleBtn.addEventListener('click', () => {
+            flashEnabled = !flashEnabled;
+            const flashText = flashToggleBtn.querySelector('span');
+            const flashIcon = document.getElementById('flashIcon');
+
+            if (flashEnabled) {
+                flashToggleBtn.classList.add('flash-btn-active');
+                flashText.textContent = 'FLASH ON';
+                flashIcon.classList.add('text-green-300');
+            } else {
+                flashToggleBtn.classList.remove('flash-btn-active');
+                flashText.textContent = 'FLASH OFF';
+                flashIcon.classList.remove('text-green-300');
+            }
+        });
+
+        // 90s Film Rendering & Core Canvas Processing Pipeline
+        async function processRetroPhoto() {
+            if (exposuresLeft <= 0) {
+                alert('No exposures left on this film roll! Please reset your film roll in the album menu.');
+                return;
+            }
+
+            // Play shutter audio
+            audio.playShutterSound();
+
+            // Simulate Flash Effect
+            if (flashEnabled) {
+                flashOverlay.classList.add('screen-flash');
+                setTimeout(() => flashOverlay.classList.remove('screen-flash'), 300);
+            }
+
+            processingOverlay.classList.remove('hidden');
+            processingOverlay.classList.add('flex');
+
+            // Set Canvas Dimensions to match video stream
+            const width = videoEl.videoWidth || 1280;
+            const height = videoEl.videoHeight || 720;
+            processingCanvas.width = width;
+            processingCanvas.height = height;
+
+            const ctx = processingCanvas.getContext('2d');
+
+            // Draw current camera frame to Canvas
+            if (facingMode === 'user') {
+                ctx.translate(width, 0);
+                ctx.scale(-1, 1);
+            }
+            ctx.drawImage(videoEl, 0, 0, width, height);
+            ctx.setTransform(1, 0, 0, 1, 0, 0); // Reset transform
+
+            // 1. Color Grading Pipeline (Warmth, Sepia, Saturation Boost)
+            const imgData = ctx.getImageData(0, 0, width, height);
+            const data = imgData.data;
+
+            for (let i = 0; i < data.length; i += 4) {
+                let r = data[i];
+                let g = data[i + 1];
+                let b = data[i + 2];
+
+                // Flash bright boost if flash enabled
+                if (flashEnabled) {
+                    r = Math.min(255, r * 1.25);
+                    g = Math.min(255, g * 1.25);
+                    b = Math.min(255, b * 1.2);
+                }
+
+                // 90s Warm Kodak Gold Tint Profile
+                let newR = (r * 0.42) + (g * 0.75) + (b * 0.20);
+                let newG = (r * 0.35) + (g * 0.68) + (b * 0.16);
+                let newB = (r * 0.20) + (g * 0.45) + (b * 0.50);
+
+                // High contrast curve
+                data[i] = Math.min(255, newR * 1.1 + 10);
+                data[i + 1] = Math.min(255, newG * 1.05 + 5);
+                data[i + 2] = Math.max(0, newB * 0.85 - 5);
+            }
+            ctx.putImageData(imgData, 0, 0);
+
+            // 2. Film Grain Overlay
+            const grainCanvas = document.createElement('canvas');
+            grainCanvas.width = width;
+            grainCanvas.height = height;
+            const grainCtx = grainCanvas.getContext('2d');
+            const grainImgData = grainCtx.createImageData(width, height);
+            const grainData = grainImgData.data;
+
+            for (let i = 0; i < grainData.length; i += 4) {
+                const noise = (Math.random() - 0.5) * 35; // Grain intensity
+                grainData[i] = 128 + noise;
+                grainData[i + 1] = 128 + noise;
+                grainData[i + 2] = 128 + noise;
+                grainData[i + 3] = 22; // Subtle opacity
+            }
+            grainCtx.putImageData(grainImgData, 0, 0);
+            ctx.drawImage(grainCanvas, 0, 0);
+
+            // 3. Vignette Effect
+            const gradient = ctx.createRadialGradient(
+                width / 2, height / 2, Math.max(width, height) * 0.35,
+                width / 2, height / 2, Math.max(width, height) * 0.75
+            );
+            gradient.addColorStop(0, 'rgba(0,0,0,0)');
+            gradient.addColorStop(1, 'rgba(0,0,0,0.65)');
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, width, height);
+
+            // 4. Bright Orange 90s LED Timestamp ('98 MM DD)
+            const date = new Date();
+            const yearStr = "'98";
+            const monthStr = String(date.getMonth() + 1).padStart(2, '0');
+            const dayStr = String(date.getDate()).padStart(2, '0');
+            const timeStampText = `${yearStr} ${monthStr} ${dayStr}`;
+
+            const fontSize = Math.max(24, Math.floor(width * 0.038));
+            ctx.font = `700 ${fontSize}px "VT323", monospace`;
+            ctx.fillStyle = "#ff6600";
+            ctx.shadowColor = "#ff2200";
+            ctx.shadowBlur = 8;
+            ctx.textAlign = "right";
+            
+            // Draw LED Date Stamp on bottom right corner
+            const paddingRight = width * 0.05;
+            const paddingBottom = height * 0.06;
+            ctx.fillText(timeStampText, width - paddingRight, height - paddingBottom);
+
+            // Reset canvas shadow for clean export
+            ctx.shadowBlur = 0;
+
+            // Generate compressed JPEG dataURL
+            const dataUrl = processingCanvas.toDataURL('image/jpeg', 0.9);
+
+            // Save directly to local IndexedDB
+            await savePhotoToDB(dataUrl, timeStampText);
+
+            // Decrement film roll counter
+            exposuresLeft--;
+            updateCounterUI();
+            updateAlbumCountUI();
+
+            // Hide processing state
+            setTimeout(() => {
+                processingOverlay.classList.remove('flex');
+                processingOverlay.classList.add('hidden');
+            }, 300);
+        }
+
+        // Shutter Click Handler
+        shutterBtn.addEventListener('click', processRetroPhoto);
+
+        // Simulated winding wheel sound/interaction
+        windingWheel.addEventListener('click', () => {
+            audio.init();
+            audio.playShutterSound();
+        });
+
+        // Update Local Photo Counter Badge
+        async function updateAlbumCountUI() {
+            const photos = await getAllPhotosFromDB();
+            albumCount.textContent = photos.length;
+        }
+
+        // Render Photo Grid inside Local Album
+        async function renderAlbumGrid() {
+            const photos = await getAllPhotosFromDB();
+            photoGrid.innerHTML = '';
+
+            if (photos.length === 0) {
+                photoGrid.innerHTML = `
+                    <div class="flex flex-col items-center justify-center text-zinc-500 py-12 text-center">
+                        <svg class="w-12 h-12 mb-2 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h0.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path></svg>
+                        <span class="font-mono-tech text-xs">NO PHOTOS DEVELOPED YET</span>
+                    </div>
+                `;
+                return;
+            }
+
+            // Render photos in reverse chronological order
+            photos.reverse().forEach((photo) => {
+                const card = document.createElement('div');
+                card.className = 'bg-zinc-800 p-3 rounded-2xl border border-zinc-700 flex flex-col gap-2 shadow-md';
+                card.innerHTML = `
+                    <div class="relative rounded-xl overflow-hidden bg-black aspect-[4/3]">
+                        <img src="${photo.dataUrl}" class="w-full h-full object-cover" alt="Developed Photo">
+                    </div>
+                    <div class="flex justify-between items-center px-1">
+                        <span class="font-digital text-amber-500 text-sm tracking-wider">STAMP: ${photo.timestamp}</span>
+                        <div class="flex gap-2">
+                            <a href="${photo.dataUrl}" download="Snap90_${photo.createdAt}.jpg" class="bg-amber-500 hover:bg-amber-400 text-zinc-950 p-2 rounded-lg text-xs font-bold flex items-center gap-1 active:scale-95 transition-all">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                                Save
+                            </a>
+                            <button onclick="deletePhoto(${photo.id})" class="bg-zinc-700 hover:bg-red-900 text-zinc-300 hover:text-red-200 p-2 rounded-lg text-xs transition-all">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                            </button>
+                        </div>
+                    </div>
+                `;
+                photoGrid.appendChild(card);
+            });
+        }
+
+        // Global Delete Photo Helper
+        window.deletePhoto = async function(id) {
+            await deletePhotoFromDB(id);
+            renderAlbumGrid();
+            updateAlbumCountUI();
+        };
+
+        // Open/Close Album Modal
+        openAlbumBtn.addEventListener('click', () => {
+            renderAlbumGrid();
+            albumModal.classList.remove('hidden');
+            albumModal.classList.add('flex');
+        });
+
+        closeAlbumBtn.addEventListener('click', () => {
+            albumModal.classList.add('hidden');
+            albumModal.classList.remove('flex');
+        });
+
+        // Clear All Photos
+        clearAllBtn.addEventListener('click', async () => {
+            if (confirm('Delete all stored photos from your local browser? This cannot be undone.')) {
+                await clearAllPhotosFromDB();
+                renderAlbumGrid();
+                updateAlbumCountUI();
+            }
+        });
+
+        // Reset Film Roll Counter
+        newRollBtn.addEventListener('click', () => {
+            exposuresLeft = 24;
+            updateCounterUI();
+            alert('Loaded new 24-exposure vintage film roll!');
+        });
+
+        // Boot Initialization
+        window.addEventListener('load', async () => {
+            await initDB();
+            updateCounterUI();
+            updateAlbumCountUI();
+            startCamera();
+        });
+    </script>
+</body>
+</html>
